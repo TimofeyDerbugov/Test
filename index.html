@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Трекер — 30 дней без курения</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root{--s:#f7f5f2;--card:#fff;--brd:rgba(0,0,0,0.08);--txt:#1a1816;--muted:#7a746e;--acc:#d94f2b;--acc2:#e88c3a;--grn:#3a9e6e;--blu:#2d7dd2;}
+@media(prefers-color-scheme:dark){:root{--s:#1a1814;--card:#232018;--brd:rgba(255,255,255,0.08);--txt:#f0ece4;--muted:#7a746e;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--s);font-family:system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;}
+#app{max-width:520px;width:100%;padding:24px 16px 60px;}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.day-title{font-size:28px;font-weight:500;color:var(--txt);}
+.today-link{font-size:12px;color:var(--blu);cursor:pointer;border:0.5px solid var(--blu);border-radius:6px;padding:3px 8px;opacity:0.8;}
+.today-link:hover{opacity:1;}
+.nav-bar{display:flex;align-items:center;gap:8px;background:var(--card);border:0.5px solid var(--brd);border-radius:12px;padding:10px 12px;margin-bottom:18px;}
+.nav-btn{background:none;border:0.5px solid var(--brd);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s,color .15s;}
+.nav-btn:hover:not(:disabled){border-color:var(--acc);color:var(--acc);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
+.dots-wrap{display:flex;gap:3px;flex:1;flex-wrap:wrap;justify-content:center;}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--brd);cursor:pointer;transition:transform .12s,background .2s;flex-shrink:0;}
+.dot:hover{transform:scale(1.5);}
+.dot.past{background:var(--grn);}
+.dot.past.over{background:var(--acc);}
+.dot.cur{background:var(--blu);box-shadow:0 0 0 2px rgba(45,125,210,.3);}
+.dot.future{background:var(--brd);opacity:.4;}
+.counter-area{text-align:center;margin:4px 0 14px;}
+.big-num{font-size:96px;font-weight:500;line-height:1;color:var(--txt);transition:color .3s,transform .1s;}
+.big-num.red{color:var(--acc);}
+.puff-lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.btn-wrap{display:flex;justify-content:center;margin-bottom:20px;}
+.puff-btn{width:180px;height:180px;border-radius:50%;border:none;cursor:pointer;background:var(--acc);color:#fff;font-size:22px;font-weight:500;letter-spacing:1px;transition:transform .1s,box-shadow .15s;box-shadow:0 4px 24px rgba(217,79,43,.35);}
+.puff-btn:hover{transform:scale(1.04);box-shadow:0 6px 32px rgba(217,79,43,.45);}
+.puff-btn:active{transform:scale(.96);}
+.puff-btn.inactive{background:rgba(0,0,0,0.06);color:var(--muted);box-shadow:none;cursor:default;font-size:16px;}
+.puff-btn.inactive:hover{transform:none;box-shadow:none;}
+@media(prefers-color-scheme:dark){.puff-btn.inactive{background:rgba(255,255,255,0.06);}}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.card{background:var(--card);border:0.5px solid var(--brd);border-radius:12px;padding:14px 16px;}
+.card.full{grid-column:1/-1;}
+.card-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.card-val{font-size:22px;font-weight:500;color:var(--txt);}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;margin-top:4px;}
+.badge.ok{background:rgba(58,158,110,.12);color:var(--grn);border:0.5px solid rgba(58,158,110,.25);}
+.badge.warn{background:rgba(217,79,43,.12);color:var(--acc);border:0.5px solid rgba(217,79,43,.25);}
+.badge.neu{background:rgba(45,125,210,.12);color:var(--blu);border:0.5px solid rgba(45,125,210,.25);}
+.badge.dim{background:rgba(0,0,0,.05);color:var(--muted);border:0.5px solid var(--brd);}
+.view-note{font-size:11px;color:var(--acc2);text-align:center;margin-bottom:10px;letter-spacing:.5px;}
+.chart-wrap{position:relative;height:120px;display:flex;align-items:flex-end;gap:1px;overflow:hidden;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;cursor:pointer;}
+.bc:hover .bar{opacity:.75;}
+.bar{width:100%;border-radius:2px 2px 0 0;min-height:2px;transition:height .35s;}
+.bar.g{background:var(--grn);}
+.bar.r{background:var(--acc);}
+.bar.b{background:var(--blu);}
+.bar.e{background:var(--brd);}
+.lline{position:absolute;width:100%;height:1px;background:var(--acc2);left:0;pointer-events:none;}
+.plan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;}
+.pc{padding:5px 3px;text-align:center;border-radius:8px;cursor:pointer;border:0.5px solid transparent;transition:background .12s,border-color .12s;}
+.pc:hover{background:var(--s);}
+.pc.cur-day{border-color:var(--blu);background:rgba(45,125,210,.07);}
+.pc.viewing-day{border-color:var(--acc2);background:rgba(232,140,58,.09);}
+.pc .pd{font-size:9px;color:var(--muted);}
+.pc .pv{font-size:12px;font-weight:500;color:var(--txt);}
+.finish{text-align:center;padding:40px 20px;}
+.finish i{font-size:64px;color:var(--grn);}
+.finish h2{font-size:28px;font-weight:500;margin-top:16px;color:var(--txt);}
+.finish p{color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hd">
+    <div class="day-title" id="day-title">День 1</div>
+    <span class="today-link" id="today-link" style="display:none;" onclick="goToday()">Сегодня →</span>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" id="prev-btn" aria-label="Предыдущий день" onclick="navDay(-1)">
+      <i class="ti ti-chevron-left"></i>
+    </button>
+    <div class="dots-wrap" id="dots"></div>
+    <button class="nav-btn" id="next-btn" aria-label="Следующий день" onclick="navDay(1)">
+      <i class="ti ti-chevron-right"></i>
+    </button>
+  </div>
+
+  <div id="view-note" class="view-note" style="display:none;"></div>
+
+  <div class="counter-area">
+    <div class="big-num" id="big-num">0</div>
+    <div class="puff-lbl">затяжек</div>
+  </div>
+
+  <div class="btn-wrap">
+    <button class="puff-btn" id="puff-btn" onclick="registerPuff()">ЗАТЯЖКА</button>
+  </div>
+
+  <div class="cards" id="cards">
+    <div class="card">
+      <div class="card-lbl">Лимит на день</div>
+      <div class="card-val" id="limit-val">—</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Осталось</div>
+      <div class="card-val" id="remain-val">—</div>
+      <div id="status-badge"></div>
+    </div>
+    <div class="card full">
+      <div class="card-lbl">График затяжек</div>
+      <div class="chart-wrap" id="chart"></div>
+    </div>
+    <div class="card full">
+      <div class="card-lbl">План на 30 дней</div>
+      <div class="plan-grid" id="plan-grid"></div>
+    </div>
+  </div>
+
+  <div class="finish" id="finish" style="display:none;">
+    <i class="ti ti-award"></i>
+    <h2>Поздравляем!</h2>
+    <p>Вы завершили программу отказа от курения</p>
+  </div>
+</div>
+
+<script>
+const TOTAL = 30;
+
+// ------- localStorage helpers -------
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+// ------- State -------
+// dayNumber вычисляется из startDate — НЕ читаем из LS напрямую
+let state = {
+  dayNumber:    1,                          // реальный текущий день, считается по дате
+  todayPuffs:   LS.get('stp', 0),
+  puffPlan:     LS.get('spp', []),
+  dailyHistory: LS.get('sdh', Array(TOTAL).fill(0)),
+  startDate:    LS.get('ssd', null),
+  viewDay:      1                           // только для просмотра, не сохраняется
+};
+
+// ------- Persistence -------
+function save() {
+  // dayNumber не сохраняем — он всегда пересчитывается из startDate
+  LS.set('stp', state.todayPuffs);
+  LS.set('spp', state.puffPlan);
+  LS.set('sdh', state.dailyHistory);
+  LS.set('ssd', state.startDate);
+}
+
+// ------- Init helpers -------
+function normalizeHistory() {
+  while (state.dailyHistory.length < TOTAL) state.dailyHistory.push(0);
+  state.dailyHistory = state.dailyHistory.slice(0, TOTAL);
+}
+
+function buildPlan(base) {
+  base = Math.max(base, 1);
+  const finalVal = base >= 5 ? 1 : 0;
+  const plan = [];
+  const q = Math.pow((finalVal === 0 ? 0.01 : finalVal) / base, 1 / (TOTAL - 1));
+  for (let i = 0; i < TOTAL; i++) {
+    plan.push(Math.max(Math.round(base * Math.pow(q, i)), finalVal));
+  }
+  state.puffPlan = plan;
+}
+
+function checkDayChange() {
+  const today = new Date();
+  if (!state.startDate) {
+    state.startDate = today.toISOString();
+    state.dayNumber = 1;
+    return;
+  }
+  const start = new Date(state.startDate);
+  const daysPassed = Math.floor((today - start) / 86400000);
+  const realDay = Math.min(daysPassed + 1, TOTAL + 1);
+  if (realDay !== state.dayNumber) {
+    const idx = state.dayNumber - 1;
+    if (idx >= 0 && idx < TOTAL) {
+      state.dailyHistory[idx] = state.todayPuffs;
+      if (state.dayNumber === 1 && state.puffPlan.length === 0) {
+        buildPlan(Math.max(state.todayPuffs, 1));
+      }
+    }
+    state.todayPuffs = 0;
+  }
+  state.dayNumber = realDay;
+}
+
+function syncToday() {
+  const idx = state.dayNumber - 1;
+  if (idx >= 0 && idx < TOTAL) state.dailyHistory[idx] = state.todayPuffs;
+}
+
+// ------- Main init -------
+function init() {
+  localStorage.removeItem('sdn'); // больше не используем — dayNumber всегда из даты
+  normalizeHistory();
+  checkDayChange();
+  syncToday();
+  if (!state.startDate) state.startDate = new Date().toISOString();
+  if (state.puffPlan.length === 0) buildPlan(20);
+  state.viewDay = Math.min(state.dayNumber, TOTAL);
+  save();
+  render();
+}
+
+// ------- Navigation -------
+function navDay(delta) {
+  const next = state.viewDay + delta;
+  if (next < 1 || next > TOTAL) return;
+  state.viewDay = next;
+  render();
+}
+
+function goToday() {
+  state.viewDay = Math.min(state.dayNumber, TOTAL);
+  render();
+}
+
+function jumpTo(day) {
+  if (day < 1 || day > TOTAL) return;
+  state.viewDay = day;
+  render();
+}
+
+// ------- Register puff -------
+function registerPuff() {
+  if (state.viewDay !== state.dayNumber || state.dayNumber > TOTAL) return;
+  state.todayPuffs++;
+  syncToday();
+  save();
+  const n = document.getElementById('big-num');
+  n.style.transform = 'scale(1.1)';
+  setTimeout(() => { n.style.transform = ''; }, 110);
+  render();
+}
+
+// ------- Render -------
+function render() {
+  const vd = state.viewDay;
+  const isToday = vd === state.dayNumber && state.dayNumber <= TOTAL;
+  const isPast = vd < state.dayNumber;
+  const isFuture = vd > state.dayNumber;
+  const isFinished = state.dayNumber > TOTAL;
+
+  // finish screen
+  document.getElementById('finish').style.display = isFinished && !isPast ? 'block' : 'none';
+  document.getElementById('cards').style.display = isFinished && !isPast ? 'none' : 'grid';
+
+  // header
+  document.getElementById('day-title').textContent = 'День ' + vd;
+  document.getElementById('today-link').style.display = isToday ? 'none' : 'inline';
+
+  // puffs for viewed day
+  const puffs = isToday ? state.todayPuffs : (state.dailyHistory[vd - 1] || 0);
+  const limit = vd > 1 && state.puffPlan[vd - 1] !== undefined ? state.puffPlan[vd - 1] : null;
+
+  // big number
+  const num = document.getElementById('big-num');
+  num.textContent = puffs;
+  num.className = 'big-num' + (limit !== null && puffs > limit ? ' red' : '');
+
+  // button
+  const btn = document.getElementById('puff-btn');
+  if (isToday) {
+    btn.className = 'puff-btn';
+    btn.textContent = 'ЗАТЯЖКА';
+  } else if (isFuture) {
+    btn.className = 'puff-btn inactive';
+    btn.textContent = 'БУДУЩИЙ ДЕНЬ';
+  } else {
+    btn.className = 'puff-btn inactive';
+    btn.textContent = 'ПРОШЛЫЙ ДЕНЬ';
+  }
+
+  // view note
+  const note = document.getElementById('view-note');
+  if (isPast) { note.style.display = 'block'; note.textContent = '← Просмотр прошлого дня'; }
+  else if (isFuture) { note.style.display = 'block'; note.textContent = 'Будущий день — данных пока нет'; }
+  else { note.style.display = 'none'; }
+
+  // stat cards
+  document.getElementById('limit-val').textContent = limit !== null ? limit : (vd === 1 ? 'День 1' : '—');
+  const rem = limit !== null ? Math.max(limit - puffs, 0) : null;
+  document.getElementById('remain-val').textContent = rem !== null ? rem : '—';
+
+  const badge = document.getElementById('status-badge');
+  if (isFuture) { badge.innerHTML = '<span class="badge dim">Впереди</span>'; }
+  else if (limit !== null && puffs > limit) { badge.innerHTML = '<span class="badge warn">Лимит превышен</span>'; }
+  else if (rem === 0 && limit !== null) { badge.innerHTML = '<span class="badge warn">Лимит исчерпан</span>'; }
+  else if (rem !== null && rem <= 3 && rem > 0) { badge.innerHTML = '<span class="badge neu">Осталось мало</span>'; }
+  else if (rem !== null) { badge.innerHTML = '<span class="badge ok">В норме</span>'; }
+  else { badge.innerHTML = ''; }
+
+  // nav arrows
+  document.getElementById('prev-btn').disabled = vd <= 1;
+  document.getElementById('next-btn').disabled = vd >= TOTAL;
+
+  renderDots(vd);
+  renderChart(vd);
+  renderPlan(vd);
+}
+
+function renderDots(vd) {
+  const wrap = document.getElementById('dots');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    if (i < state.dayNumber) {
+      const h = state.dailyHistory[i - 1] || 0;
+      const l = state.puffPlan[i - 1];
+      d.className = 'dot past' + (l && h > l ? ' over' : '');
+    } else if (i === state.dayNumber) {
+      d.className = 'dot cur';
+    } else {
+      d.className = 'dot future';
+    }
+    // outline on viewed day
+    if (i === vd) d.style.boxShadow = '0 0 0 2px var(--acc2)';
+    d.title = 'День ' + i;
+    d.addEventListener('click', () => jumpTo(i));
+    wrap.appendChild(d);
+  }
+}
+
+function renderChart(vd) {
+  const wrap = document.getElementById('chart');
+  wrap.innerHTML = '';
+  const hist = state.dailyHistory.slice(0, TOTAL);
+  const max = Math.max(...hist, 1);
+  for (let i = 0; i < TOTAL; i++) {
+    const dayN = i + 1;
+    const col = document.createElement('div');
+    col.className = 'bc';
+    col.title = 'День ' + dayN + ': ' + hist[i] + ' затяжек';
+
+    const bar = document.createElement('div');
+    const lim = state.puffPlan[i];
+    if (dayN > state.dayNumber) {
+      bar.className = 'bar e';
+    } else if (lim && hist[i] > lim) {
+      bar.className = 'bar r';
+    } else if (dayN === state.dayNumber) {
+      bar.className = 'bar b';
+    } else {
+      bar.className = 'bar g';
+    }
+    bar.style.height = Math.round((hist[i] / max) * 100) + '%';
+    col.appendChild(bar);
+
+    if (lim && i > 0) {
+      const ll = document.createElement('div');
+      ll.className = 'lline';
+      ll.style.bottom = Math.round((lim / max) * 100) + '%';
+      col.appendChild(ll);
+    }
+
+    if (dayN === vd) col.style.outline = '1px solid var(--acc2)';
+    col.addEventListener('click', () => jumpTo(dayN));
+    wrap.appendChild(col);
+  }
+}
+
+function renderPlan(vd) {
+  const grid = document.getElementById('plan-grid');
+  grid.innerHTML = '';
+  if (state.puffPlan.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted)">План будет построен после первого дня</div>';
+    return;
+  }
+  for (let i = 0; i < TOTAL; i++) {
+    const dayN = i + 1;
+    const c = document.createElement('div');
+    let cls = 'pc';
+    if (dayN === state.dayNumber) cls += ' cur-day';
+    else if (dayN === vd) cls += ' viewing-day';
+    c.className = cls;
+    c.innerHTML = '<div class="pd">' + dayN + '</div><div class="pv">' + state.puffPlan[i] + '</div>';
+    c.title = 'День ' + dayN + ': лимит ' + state.puffPlan[i];
+    c.addEventListener('click', () => jumpTo(dayN));
+    grid.appendChild(c);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
